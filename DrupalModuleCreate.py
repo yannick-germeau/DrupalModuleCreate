@@ -8,7 +8,7 @@ def Window():
 class DmcreateCommand(sublime_plugin.WindowCommand):
     def run(self, paths = [], name = ""):
         import functools
-        #Window().run_command('hide_panel');
+        Window().run_command('hide_panel');
         Window().show_input_panel("Module Name:", name, functools.partial(self.on_done, paths), None, None)
 
     def on_done(self, paths, name): 
@@ -27,7 +27,6 @@ class DmcreateCommand(sublime_plugin.WindowCommand):
             else:
                 try:
                     item.create()
-                    item.edit()
                 except:
                     sublime.error_message("Unable to create file:\n\n"+item.path())
                     self.run(paths, name)
@@ -48,9 +47,14 @@ class DmcreateCommand(sublime_plugin.WindowCommand):
             Window().show_quick_panel([yes, no], functools.partial(self.on_confirm_install, paths, name))
 
     def on_confirm_install(self, paths,name, result):
-        pprint.pprint(paths)
-        pprint.pprint(name)
-        pprint.pprint(result)
+        if (result == 0):
+            for item in paths:
+                item = DMModule(item, name)
+                try:
+                    item.create_install()
+                except:
+                    return
+        self.refresh()
 
     def refresh(self):
         try:
@@ -62,9 +66,8 @@ class DmcreateCommand(sublime_plugin.WindowCommand):
 
 class DMModule:
     def __init__(self, path, name):
-        self._path = path
+        self._path = os.path.join(path, name)
         self._name = name
-    
 
     def exists(self):
         return os.path.isdir(self.path()) or os.path.isfile(self.path())
@@ -72,6 +75,11 @@ class DMModule:
     def create(self):
         self.dirnameCreate()
         os.makedirs(self.path(), 0o775)
+        self.write(self._name+'.info',"name = "+self._name+"\n\rdescription =\n\rcore = 7.x\n\rpackage = Globule");
+        self.write(self._name+'.module', "<?php");
+
+    def create_install(self):
+        self.write(self._name+'.install', "<?php");
     
     def dirnameCreate(self):
         try:
@@ -81,6 +89,8 @@ class DMModule:
 
     def dirname(self):
         branch, leaf = os.path.split(self.path())
+        pprint.pprint(branch)
+        pprint.pprint(leaf)
         return branch;
 
     def path(self, path = ''):
@@ -100,5 +110,6 @@ class DMModule:
         branch, leaf = os.path.split(self.path())
         return leaf;
 
-    def join(self, name):
-        return os.path.join(self.path(), name)
+    def write(self,filename, content):
+        pprint.pprint(os.path.join(self.path(),filename))
+        open(os.path.join(self.path(),filename), 'w+', encoding='utf8', newline='').write(str(content))
