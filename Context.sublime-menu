@@ -1,0 +1,7 @@
+[
+	{
+	    "id" : "DrupalModuleCreate",
+	    "caption" : "Create Drupal Module",
+	    "command" : "dmcreate"
+	}
+]

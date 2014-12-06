@@ -1,0 +1,8 @@
+[
+	{
+	    "id" : "DMcreate",
+	    "caption" : "Create Drupal Module",
+	    "command" : "dmcreate",
+	    "args": {"paths": []}
+	}
+]
